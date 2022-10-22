@@ -47,7 +47,9 @@ const unsigned int batteryMeasureLimit = 15;
 
 #define BAT_PIN 34
 unsigned int batteryMeasureCounter = 0;
-int bat_value = 0;
+int bat_values[batteryMeasureLimit];
+
+float bat_value = 0;
 float bat_voltage = 0.0f;
 
 #define LED_PIN 2
@@ -149,6 +151,7 @@ void loop() {
   ThingSpeak.setField(8, tDS);
 
   int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+  // led signalization for sending sensor data
   if(x == 200) {
     digitalWrite(LED_PIN, HIGH);
     delay(100);
@@ -158,17 +161,25 @@ void loop() {
   }
 
   if (batteryMeasureCounter < batteryMeasureLimit) {
+    bat_values[batteryMeasureCounter] = analogRead(BAT_PIN);
     batteryMeasureCounter++;
   } else {
     batteryMeasureCounter = 0;
+
+    int sum = 0;
+    for(int i = 0; i < batteryMeasureLimit; i++) {
+      sum += bat_values[i]; 
+    }
     
-    bat_value = analogRead(BAT_PIN);
+    bat_value = float(sum)/batteryMeasureLimit;
     bat_voltage = float(bat_value) / 4096 * 3.3 * 2;
     
     ThingSpeak.setField(1, bat_voltage);
     ThingSpeak.setField(2, bat_value);
 
     x = ThingSpeak.writeFields(SECRET_BATTERY_ID, SECRED_BATTERY_APIKEY);
+
+    // led signalization for sending battery data
   }
 
   // wait
