@@ -5,9 +5,10 @@
 // https://github.com/adafruit/Adafruit_SHT31
 #include "Adafruit_SHT31.h"
 
-// BMP280
-// https://github.com/adafruit/Adafruit_BMP280_Library
-#include <Adafruit_BMP280.h>
+//// BMP280
+//// https://github.com/adafruit/Adafruit_BMP280_Library
+//// 23.10.2022 -> BMP280 stopped working
+//#include <Adafruit_BMP280.h>
 
 // DHT11 & DHT22
 // https://github.com/adafruit/DHT-sensor-library
@@ -28,7 +29,7 @@
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
-Adafruit_BMP280 bmp;
+//Adafruit_BMP280 bmp;
 
 DHT dht11(5, DHT11);
 
@@ -77,13 +78,13 @@ void setup() {
   }
   
   // initialize sensors
-  if (!bmp.begin()) {
-    ThingSpeakStatus = "Error with BMP280";
-    ThingSpeak.setStatus(ThingSpeakStatus);
-    ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-    delay(60000);
-    ESP.restart();
-  }
+//  if (!bmp.begin()) {
+//    ThingSpeakStatus = "Error with BMP280";
+//    ThingSpeak.setStatus(ThingSpeakStatus);
+//    ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+//    delay(60000);
+//    ESP.restart();
+//  }
   
   if (!sht31.begin(0x44)) {
     ThingSpeakStatus = "Error with SHT31";
@@ -117,7 +118,7 @@ void loop() {
   float t = sht31.readTemperature();
   float h = sht31.readHumidity();
 
-  float t2 = bmp.readTemperature();
+//  float t2 = bmp.readTemperature();
 
   float h11 = dht11.readHumidity();
   float t11 = dht11.readTemperature();
@@ -137,7 +138,7 @@ void loop() {
   ThingSpeak.setField(2, h);
 
   // MBP280
-  ThingSpeak.setField(3, t2);
+//  ThingSpeak.setField(3, t2);
 
   // DHT11
   ThingSpeak.setField(4, t11);
