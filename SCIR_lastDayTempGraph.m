@@ -6,7 +6,7 @@ temperatureFieldID = [1 3 4 6 8];
 internetChannel = 1890915;
 internetChannelReadKey = 'CT8EQRAQBZGWLM2L';
 
-NUM_OF_HOURS = 24;
+NUM_OF_HOURS = 25;
 NUM_OF_SENSORS = size(temperatureFieldID, 2);
 
 % get last 24 values from internet data
@@ -35,7 +35,7 @@ for i = 0:(NUM_OF_HOURS-1)
     
     % get data from selected hour
     hourly_temp = temp(time >= start+hours(i) & time < start+hours(i + 1), :);
-    times(i+1) = start+hours(i+1) + minutes(30);
+    times(i+1) = start+hours(i) + minutes(30);
     
     % find Q1, Q2 Q3
     for j = 1:NUM_OF_SENSORS
@@ -68,7 +68,7 @@ errorbar(repmat(times, [1, NUM_OF_SENSORS]), median_temp,neg_err, pos_err, '-o',
 hold off
 grid minor
 xlabel("date");
-xticks(times([1,4,8,12,16,20,24]));
+xticks(times(1:3:NUM_OF_HOURS));
 ylabel("temperature [\circC]");
 legend(["Internet", "SHT31", "BMP280", "DS18B20", "DHT11", "DHT22"], "Location", "eastoutside")
 title("Last 24 hour temperature");
