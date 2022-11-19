@@ -5,10 +5,11 @@
 // https://github.com/adafruit/Adafruit_SHT31
 #include "Adafruit_SHT31.h"
 
-//// BMP280
-//// https://github.com/adafruit/Adafruit_BMP280_Library
-//// 23.10.2022 -> BMP280 stopped working
-//#include <Adafruit_BMP280.h>
+// BMP280
+// https://github.com/adafruit/Adafruit_BMP280_Library
+// 23.10.2022 -> BMP280 stopped working
+// 19.11.2022 -> changed communication type from I2C to SPI. BP280 started working
+#include <Adafruit_BMP280.h>
 
 // DHT11 & DHT22
 // https://github.com/adafruit/DHT-sensor-library
@@ -25,17 +26,40 @@
 // https://github.com/mathworks/thingspeak-arduino
 #include "ThingSpeak.h"
 
+// ------------------------------------------- USED PINS -------------------------------------------//
+// Communication pins
+// GPIO23 - MOSI  (SPI)
+// GPIO22 - SCL   (I2C)
+// GPIO21 - SDA   (I2C)
+// GPIO19 - MISO  (SPI)
+// GPIO18 - SCK   (SPI)
+// GPIO4  - One wire bus
+#define ONE_WIRE_BUS 4
+
+// ESP32 status pins
+// GPIO2  - LED   (SEND STATUS)
+#define LED_PIN 2
+// GPIO34 - V_bat
+#define BAT_PIN 34
+
+// Sensors pins
+// GPIO5  - BMP_CS
+# define BMP_CS 5
+// GPIO32 - DHT11
+# define DHT11_PIN 32
+// GPIO33 - DHT22
+# define DHT22_PIN 33
+
 // ------------------------------------------- SENSORS DECLARATION -------------------------------------------//
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
-//Adafruit_BMP280 bmp;
+Adafruit_BMP280 bmp(BMP_CS);
 
-DHT dht11(5, DHT11);
+DHT dht11(DHT11_PIN, DHT11);
 
-DHT dht22(4, DHT22);
+DHT dht22(DHT22_PIN, DHT22);
 
-#define ONE_WIRE_BUS 18
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature dsTemp(&oneWire);
 
@@ -46,14 +70,11 @@ String ThingSpeakStatus = "";
 const unsigned int delayTime = 20000;
 const unsigned int batteryMeasureLimit = 15;
 
-#define BAT_PIN 34
 unsigned int batteryMeasureCounter = 0;
 int bat_values[batteryMeasureLimit];
 
 float bat_value = 0;
 float bat_voltage = 0.0f;
-
-#define LED_PIN 2
 
 // ------------------------------------------- THING SPEAK / WIFI -------------------------------------------//
 char ssid[] = SECRET_SSID;
@@ -78,13 +99,13 @@ void setup() {
   }
   
   // initialize sensors
-//  if (!bmp.begin()) {
-//    ThingSpeakStatus = "Error with BMP280";
-//    ThingSpeak.setStatus(ThingSpeakStatus);
-//    ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-//    delay(60000);
-//    ESP.restart();
-//  }
+  if (!bmp.begin()) {
+    ThingSpeakStatus = "Error with BMP280";
+    ThingSpeak.setStatus(ThingSpeakStatus);
+    ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+    delay(60000);
+    ESP.restart();
+  }
   
   if (!sht31.begin(0x44)) {
     ThingSpeakStatus = "Error with SHT31";
@@ -118,7 +139,7 @@ void loop() {
   float t = sht31.readTemperature();
   float h = sht31.readHumidity();
 
-//  float t2 = bmp.readTemperature();
+  float t2 = bmp.readTemperature();
 
   float h11 = dht11.readHumidity();
   float t11 = dht11.readTemperature();
@@ -137,8 +158,8 @@ void loop() {
   ThingSpeak.setField(1, t);
   ThingSpeak.setField(2, h);
 
-  // MBP280
-//  ThingSpeak.setField(3, t2);
+  // BMP280
+  ThingSpeak.setField(3, t2);
 
   // DHT11
   ThingSpeak.setField(4, t11);
