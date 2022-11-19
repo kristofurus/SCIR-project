@@ -52,8 +52,8 @@ for i = 0:(NUM_OF_HOURS-1)
            % get IRQ
            IRQ = abs(q3-q1);
 
-           pos_err(i+1, j) = max(sensor(sensor <= q3+3/2*IRQ));
-           neg_err(i+1, j) = min(sensor(sensor >= q1-3/2*IRQ));
+           pos_err(i+1, j) = abs(median_temp(i+1, j) - max(sensor(sensor <= q3+3/2*IRQ)));
+           neg_err(i+1, j) = abs(median_temp(i+1, j) - min(sensor(sensor >= q1-3/2*IRQ)));
        end
        
     end
