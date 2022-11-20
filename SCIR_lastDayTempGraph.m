@@ -10,7 +10,8 @@ NUM_OF_HOURS = 25;
 NUM_OF_SENSORS = size(temperatureFieldID, 2);
 
 % get last 24 values from internet data
-[internet_temp, internet_times] = thingSpeakRead(internetChannel, 'Fields', 1, 'NumPoints', NUM_OF_HOURS, 'ReadKey', internetChannelReadKey);
+% [internet_temp, internet_times] = thingSpeakRead(internetChannel, 'Fields', 1, 'NumPoints', NUM_OF_HOURS, 'ReadKey', internetChannelReadKey);
+[internet_temp, internet_times] = thingSpeakRead(internetChannel, 'Fields', 1, 'NumMinutes', NUM_OF_HOURS*60, 'ReadKey', internetChannelReadKey);
 last_hour = hour(internet_times(end));
 
 % current time
@@ -31,11 +32,15 @@ pos_err = zeros(NUM_OF_HOURS, NUM_OF_SENSORS);
 median_temp = zeros(NUM_OF_HOURS, NUM_OF_SENSORS);
 neg_err = zeros(NUM_OF_HOURS, NUM_OF_SENSORS);
 
+plot_internet_temp = zeros(NUM_OF_HOURS, 1); 
+
 for i = 0:(NUM_OF_HOURS-1)
     
     % get data from selected hour
     hourly_temp = temp(time >= start+hours(i) & time < start+hours(i + 1), :);
     times(i+1) = start+hours(i) + minutes(30);
+    
+    plot_internet_temp(i+1) = mean(internet_temp(internet_times >= start+hours(i) & internet_times < start+hours(i + 1)));
     
     % find Q1, Q2 Q3
     for j = 1:NUM_OF_SENSORS
@@ -61,7 +66,8 @@ for i = 0:(NUM_OF_HOURS-1)
 end
 
 % plot data
-bar(times, internet_temp, "FaceAlpha",0.5);
+bar(times, plot_internet_temp, 1, "FaceAlpha",0.5, 'linestyle', '--');
+% plot(times, plot_internet_temp , "-s", "color", "#4DBEEE", "linewidth", 20);  
 hold on
 % errorbar([times,times,times,times], median_temp,lower_outlier, upper_outlier, '-o', "linewidth", 1.5, "MarkerSize",8, "capsize", 10);
 errorbar(repmat(times, [1, NUM_OF_SENSORS]), median_temp,neg_err, pos_err, '-o', "linewidth", 1.5, "MarkerSize",8, "capsize", 10);
